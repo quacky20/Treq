@@ -1,1 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Geom:ital,wght@0,300..900;1,300..900&display=swap');
+
 @import "tailwindcss";
+
+@layer utilities {
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        /* IE and Edge */
+        scrollbar-width: none;
+        /* Firefox */
+    }
+}
+
+@theme {
+    --color-text: #ffffff;
+    --color-text-dark: #00170f;
+    --color-background: #00170f;
+    --color-background-secondary: #0f3125;
+    --color-primary: #00d289;
+    --color-secondary: #dedcff;
+    --color-accent: #8cffd7;
+
+    --font-geom: "Geom", sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}

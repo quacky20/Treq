@@ -1,11 +1,11 @@
 import { useContext, useEffect, useRef, useState } from "react"
-import Avatar from "./Avatar"
-import Logo from "./Logo"
 import axios from "axios"
-import { UserContext } from "./UserContext"
-import Contact from "./Contact"
-import Menu from "./Menu"
-import Toast from "./Toast"
+import { UserContext } from "./context/UserContext"
+import Avatar from "../components/Avatar"
+import Logo from "../components/Logo"
+import Contact from "../components/Contact"
+import Menu from "../components/Menu"
+import Toast from "../components/Toast"
 
 function Chat() {
 
@@ -333,7 +333,7 @@ function Chat() {
             },
             {
               text: "Cancel",
-              function: () =>{
+              function: () => {
                 setToast(null)
                 setDeleteType(null)
               },

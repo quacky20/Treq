@@ -1,5 +1,4 @@
-import { useEffect } from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 function Toast({ content, action, onClose }) {
     const [isVisible, setIsVisible] = useState(false)

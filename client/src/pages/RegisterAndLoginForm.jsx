@@ -1,10 +1,8 @@
-import { useState } from "react"
+import { useState, useContext } from "react"
 import axios from "axios"
-import { useContext } from "react"
-import { UserContext } from "./UserContext"
-import Logo from "./Logo"
-import Toast from "./Toast"
-import { useEffect } from "react"
+import { UserContext } from "./context/UserContext"
+import Logo from "../components/Logo"
+import Toast from "../components/Toast"
 
 export default function RegisterAndLoginForm() {
     const [username, setUsername] = useState('')

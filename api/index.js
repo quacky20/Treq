@@ -18,15 +18,33 @@ const bcryptSalt = bcrypt.genSaltSync(10)
 
 mongoose.connect(mongo_uri)
 
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    /\.vercel\.app$/
+].filter(Boolean)
+
 app.use(cors({
     credentials: true,
-    origin: process.env.CLIENT_URL
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true)
+        if (allowedOrigins.some(allowed =>
+            typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
+        )) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    }
 }))
 app.use(express.json())
 app.use(cookieParser())
 
 app.get('/test', (req, res) => {
     res.send("Hello world")
+})
+
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' })
 })
 
 async function getUserDataFromRequest(req) {
@@ -164,7 +182,7 @@ app.delete('/messages', async (req, res) => {
     }
 })
 
-const port = 4000
+const port = process.env.PORT || 4000
 
 const server = app.listen(port, () => {
     console.log(`Listening on port ${port}...`)

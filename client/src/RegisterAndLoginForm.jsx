@@ -23,7 +23,7 @@ export default function RegisterAndLoginForm() {
             setId(data.id)
         }
         catch (error) {
-            setError(error.response.data.error)
+            setError(error?.response?.data?.error || 'Something went wrong')
         }
     }
 

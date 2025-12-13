@@ -7,15 +7,17 @@ function Avatar({ username, userID, online }) {
     const firstLetter = username?.[0]?.toUpperCase() || '?'
 
     return (
-        <div className={`w-8 h-8 ${color} rounded-full flex items-center justify-center relative text-text-dark
-        font-bold`}>
-            {firstLetter}
-            {online && (
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-text-dark
+        font-bold p-px border-2 ` + (online ? 'border-emerald-300' : 'border-gray-300')}>
+            <div className={`${color} rounded-full h-full w-full flex items-center justify-center`}>
+                {firstLetter}
+            </div>
+            {/* {online && (
                 <div className="absolute w-2 h-2 rounded-full bg-emerald-300 bottom-0 right-0 border border-white"></div>
             )}
             {!online && (
                 <div className="absolute w-2 h-2 rounded-full bg-gray-300 bottom-0 right-0 border border-white"></div>
-            )}
+            )} */}
         </div>
     )
 }

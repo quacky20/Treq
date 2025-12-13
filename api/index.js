@@ -74,6 +74,13 @@ app.post('/login', async (req, res) => {
                 })
             })
         }
+        else {
+            return res.status(401).json({ error: "Wrong password" })
+        }
+    }
+    else {
+        return res.status(404).json({ error: "User not found" })
+
     }
 })
 
@@ -84,7 +91,10 @@ app.post('/logout', (req, res) => {
 app.post('/register', async (req, res) => {
     const { username, password } = req.body
     try {
-        const hashedPassword = bcrypt.hashSync(password, bcryptSalt)
+        let hashedPassword = password
+        if (password && password.length >= 8) {
+            hashedPassword = bcrypt.hashSync(password, bcryptSalt)
+        }
         const createdUser = await User.create({
             username: username,
             password: hashedPassword
@@ -97,8 +107,13 @@ app.post('/register', async (req, res) => {
                 id: createdUser._id,
             })
         })
-    } catch (error) {
-        throw (error)
+    } catch (err) {
+        if (err.code === 11000) {
+            res.status(409).json({ error: 'User already exists' })
+        }
+        else {
+            res.status(500).json({ error: err.message })
+        }
     }
 })
 
@@ -116,6 +131,37 @@ app.get('/messages/:userID', async (req, res) => {
 app.get('/people', async (req, res) => {
     const users = await User.find({}, { '_id': 1, username: 1 })
     res.json(users)
+})
+
+app.delete('/account', async (req, res) => {
+    try {
+        const userData = await getUserDataFromRequest(req)
+        const id = userData.userID
+        const user = await User.findOneAndDelete({ _id: id })
+        if (!user) {
+            return res.status(404).json({ err: "User not found" })
+        }
+        await Message.deleteMany({ $or: [{ sender: id }, { recepient: id }] })
+
+        return res.cookie('token', '', { sameSite: 'none', secure: true }).status(200).json({ message: 'Account deleted successfully' })
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message })
+
+    }
+})
+
+app.delete('/messages', async (req, res) => {
+    try {
+        const userData = await getUserDataFromRequest(req)
+        const id = userData.userID
+
+        await Message.deleteMany({ $or: [{ sender: id }, { recepient: id }] })
+
+        return res.status(200).json({ message: 'Messages deleted successfully' })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
 })
 
 const port = 4000

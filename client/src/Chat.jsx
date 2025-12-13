@@ -4,21 +4,35 @@ import Logo from "./Logo"
 import axios from "axios"
 import { UserContext } from "./UserContext"
 import Contact from "./Contact"
+import Menu from "./Menu"
+import Toast from "./Toast"
 
 function Chat() {
+
+  // React States
   const [ws, setWs] = useState(null)
   const [onlinePeople, setOnlinePeople] = useState({})
   const [offlinePeople, setOfflinePeople] = useState({})
   const [selectedUser, setSelectedUser] = useState(null)
   const [newMessageText, setNewMessageText] = useState('')
   const [messages, setMessages] = useState([])
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [toast, setToast] = useState(null)
+  const [deleteType, setDeleteType] = useState(null)
+  const [error, setError] = useState(null)
+
   const { id, username, setId, setUsername } = useContext(UserContext)
+
+  // React Refs
   const divUnderMessages = useRef()
+  const textareaRef = useRef()
+  const menuRef = useRef()
 
   useEffect(() => {
     connectToWebSocket()
   }, [])
 
+  // Utility Functions
   function connectToWebSocket() {
     const ws = new WebSocket('ws://localhost:4000')
     setWs(ws)
@@ -49,18 +63,37 @@ function Chat() {
     }
   }
 
+  function handleKeyDown(ev) {
+    if (ev.key === 'Enter' && !ev.shiftKey) {
+      ev.preventDefault()
+      sendMessage(ev)
+    }
+  }
+
   function sendMessage(ev) {
     ev.preventDefault()
-    ws.send(JSON.stringify({
-      recepient: selectedUser,
-      text: newMessageText,
-    }))
-    setMessages(prev => ([...prev, {
-      text: newMessageText,
-      sender: id,
-      recepient: selectedUser,
-    }]))
+    if (newMessageText.trim() !== '') {
+      ws.send(JSON.stringify({
+        recepient: selectedUser,
+        text: newMessageText.trimEnd(),
+      }))
+      setMessages(prev => ([...prev, {
+        text: newMessageText.trimEnd(),
+        sender: id,
+        recepient: selectedUser,
+      }]))
+    }
     setNewMessageText('')
+    textareaRef.current.style.height = '3rem'
+  }
+
+  function handleSend(ev) {
+    setNewMessageText(ev.target.value)
+
+    const textarea = textareaRef.current
+    textarea.style.height = '3rem'
+    textarea.style.height = textarea.scrollHeight + 'px'
+
   }
 
   function logout() {
@@ -71,15 +104,59 @@ function Chat() {
     })
   }
 
-  function handleExitChat(ev) {
-    if (ev.key === 'Escape') {
-      setSelectedUser(null)
+  function handleClickOutside(ev) {
+    const menu = menuRef.current
+    const button = ev.target.closest('button')
+    if (menu && !menu.contains(ev.target) && !button) {
+      setIsMenuOpen(false)
     }
   }
 
+  function handleDeleteAccount() {
+    setToast('Are you sure you want to delete your account?')
+    setDeleteType('account')
+  }
+
+  function deleteAccount() {
+    axios.delete('/account')
+      .then(() => {
+        setWs(null)
+        setId(null)
+        setUsername(null)
+        setToast(null)
+        setDeleteType(null)
+        setIsMenuOpen(false)
+      })
+      .catch(err => setError('Failed to delete account'))
+  }
+
+  function handleDeleteMessages() {
+    setToast('Are you sure you want to delete all your messages?')
+    setDeleteType('messages')
+  }
+
+  function deleteMessages() {
+    axios.delete('/messages')
+      .then(() => {
+        setSelectedUser(null)
+        setMessages([])
+        setToast(null)
+        setDeleteType(null)
+        setIsMenuOpen(false)
+      })
+      .catch(err => setError('Failed to delete messages'))
+  }
+
   useEffect(() => {
+    function handleExitChat(ev) {
+      if (ev.key === 'Escape') {
+        setSelectedUser(null)
+      }
+    }
     document.addEventListener('keydown', handleExitChat)
-  })
+
+    return () => document.removeEventListener('keydown', handleExitChat)
+  }, [])
 
   useEffect(() => {
     const div = divUnderMessages.current
@@ -87,6 +164,14 @@ function Chat() {
       div.scrollIntoView({ behaviour: 'smooth', block: 'end' })
     }
   }, [messages])
+
+  useEffect(() => {
+    setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside)
+    }, 10);
+
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMenuOpen])
 
   useEffect(() => {
     if (selectedUser) {
@@ -118,7 +203,24 @@ function Chat() {
 
       {/* Sidebar */}
       <div className='bg-background w-1/4 flex flex-col select-none px-3'>
-        <div className="text-white font-bold text-3xl py-3 px-3">My Chats</div>
+        <div className="flex flex-row justify-between items-center relative">
+          <div className="text-white font-bold text-3xl pb-5 pt-5 px-3">My Chats</div>
+          <button
+            className="cursor-pointer"
+            onClick={() => { setIsMenuOpen(prev => !prev) }}
+          >
+            <span className="material-symbols-outlined text-text" style={{ fontSize: '1.875rem' }}>
+              more_vert
+            </span>
+          </button>
+          {isMenuOpen && (
+            <Menu
+              ref={menuRef}
+              onDeleteAccount={handleDeleteAccount}
+              onDeleteChats={handleDeleteMessages}
+            />
+          )}
+        </div>
         <div className="overflow-y-scroll h-full no-scrollbar">
           {Object.keys(onlinePeopleExcludingUser).map(id => (
             <Contact
@@ -187,7 +289,7 @@ function Chat() {
                 {messages.map((message, _) => (
                   <div key={_} className={(message.sender === id ? 'text-right' : 'text-left')}>
                     <div
-                      className={"mx-2 my-1 inline-block text-left rounded-lg p-2 text-text " + (message.sender === id ? "bg-primary" : "bg-background")}
+                      className={"mx-2 my-1 inline-block text-left rounded-lg p-2 text-text whitespace-pre-wrap " + (message.sender === id ? "bg-primary" : "bg-background")}
                     >
                       {message.text}
                     </div>
@@ -199,25 +301,51 @@ function Chat() {
           )}
         </div>
 
-        {/* Message Box */}
+        {/* Message Input */}
         {!!selectedUser && (
           <form
-            className="flex bg-white border-t border-primary"
+            className="flex bg-whitex border-tx xborder-primary"
             onSubmit={sendMessage}
           >
-            <input
+            <textarea
+              ref={textareaRef}
               value={newMessageText}
-              onChange={ev => setNewMessageText(ev.target.value)}
-              type="text"
+              onChange={ev => handleSend(ev)}
               placeholder='Message'
-              className='bg-white w-full p-3 focus:outline-none'
+              onKeyDown={handleKeyDown}
+              className='bg-background w-full p-3 focus:outline-none placeholder-text rounded-lg m-2 text-text resize-none max-h-32  
+              h-12 overflow-y-auto no-scrollbar'
             />
-            <button type="submit" className="bg-primary w-1/10 flex justify-center items-center">
+            <button type="submit" className="bg-primary w-16 flex justify-center items-center m-2 rounded-lg hover:bg-primary/90 cursor-pointer transition-all duration-150">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="#ffffff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m5 12l-.604-5.437C4.223 5.007 5.825 3.864 7.24 4.535l11.944 5.658c1.525.722 1.525 2.892 0 3.614L7.24 19.465c-1.415.67-3.017-.472-2.844-2.028L5 12Zm0 0h7" /></svg>
             </button>
           </form>
         )}
       </div>
+      {toast && (
+        <Toast
+          content={toast}
+          action={[
+            {
+              text: "Confirm",
+              function: (deleteType === 'account' ? deleteAccount : deleteMessages),
+            },
+            {
+              text: "Cancel",
+              function: () =>{
+                setToast(null)
+                setDeleteType(null)
+              },
+            }
+          ]}
+        />
+      )}
+      {error && (
+        <Toast
+          content={error}
+          onClose={() => setError(null)}
+        />
+      )}
     </div>
   )
 }

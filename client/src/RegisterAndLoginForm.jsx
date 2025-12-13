@@ -3,26 +3,34 @@ import axios from "axios"
 import { useContext } from "react"
 import { UserContext } from "./UserContext"
 import Logo from "./Logo"
+import Toast from "./Toast"
+import { useEffect } from "react"
 
 export default function RegisterAndLoginForm() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [isLoginOrRegister, setIsLoginOrRegister] = useState('register')
+    const [error, setError] = useState(null)
 
     const { setUsername: setLoggedInUsername, setId } = useContext(UserContext)
 
     async function handleSubmit(ev) {
         ev.preventDefault()
         const url = isLoginOrRegister === 'register' ? '/register' : '/login'
-        const { data } = await axios.post(url, { username, password })
-        setLoggedInUsername(username)
-        setId(data.id)
+        try {
+            const { data } = await axios.post(url, { username, password })
+            setLoggedInUsername(username)
+            setId(data.id)
+        }
+        catch (error) {
+            setError(error.response.data.error)
+        }
     }
 
     return (
         <div className="bg-background-secondary h-screen flex items-center text-text font-geom">
             <form
-                className="w-1/4 mx-auto bg-background shadow-2xl shadow-background/50 p-10 rounded-lg"
+                className="w-80 mx-auto bg-background shadow-2xl shadow-background/50 p-10 rounded-lg"
                 onSubmit={handleSubmit}
             >
                 <div className="flex justify-center mb-5">
@@ -35,7 +43,7 @@ export default function RegisterAndLoginForm() {
                     }}
                     type="text"
                     placeholder="Username"
-                    className="block w-full p-2 mb-2 rounded-lg border border-primary focus:outline-none"
+                    className="block w-full p-2 mb-2 rounded-lg border border-primary focus:outline-none placeholder-accent/70"
                 />
                 <input
                     value={password}
@@ -44,7 +52,8 @@ export default function RegisterAndLoginForm() {
                     }}
                     type="password"
                     placeholder="Password"
-                    className="block w-full p-2 mb-2 rounded-lg border border-primary focus:outline-none"
+                    className="block w-full p-2 mb-2 rounded-lg border border-primary focus:outline-none placeholder-accent/70 password
+                    "
                 />
                 <button className="bg-primary text-white block w-full rounded-lg p-2 hover:cursor-pointer hover: shadow-primary/60 hover:bg-primary/80 transition-all duration-300">
                     {isLoginOrRegister === 'register' ? 'Register' : 'Login'}
@@ -60,6 +69,12 @@ export default function RegisterAndLoginForm() {
                     </div>
                 )}
             </form>
+            {error && (
+                <Toast
+                    content={error}
+                    onClose={() => setError(null)}
+                />
+            )}
         </div>
     )
 }

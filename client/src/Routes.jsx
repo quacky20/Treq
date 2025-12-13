@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { UserContext } from './context/UserContext'
-import RegisterAndLoginForm from './components/RegisterAndLoginForm'
-import Chat from './components/Chat'
+import RegisterAndLoginForm from './pages/RegisterAndLoginForm'
+import Chat from './pages/Chat'
 
 function Routes() {
     const { username, id } = useContext(UserContext)

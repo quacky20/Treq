@@ -33,27 +33,53 @@ A modern, real-time chat application built with React and Node.js, featuring Web
 
 ```
 treq/
-├── api/                   # Backend server
+├── api/                         # Backend server
+│   ├── config/
+│   │   ├── database.js          # MongoDB connection
+│   │   └── cors.js              # CORS configuration
+│   ├── controllers/
+│   │   ├── authController.js    # Authentication logic
+│   │   ├── userController.js    # User management
+│   │   └── messageController.js # Message handling
+│   ├── middleware/
+│   │   ├── auth.js              # JWT verification
+│   │   └── errorHandler.js      # Error handling
 │   ├── models/
-│   │   ├── User.js        # User schema
-│   │   └── Message.js     # Message schema
-│   ├── index.js           # Server entry point
-│   ├── .env.example       # Environment variables template
+│   │   ├── User.js              # User schema
+│   │   └── Message.js           # Message schema
+│   ├── routes/
+│   │   ├── authRoutes.js        # Auth endpoints
+│   │   ├── userRoutes.js        # User endpoints
+│   │   └── messageRoutes.js     # Message endpoints
+│   ├── websocket/
+│   │   └── wsHandler.js         # WebSocket logic
+│   ├── utils/
+│   │   └── constants.js         # App constants
+│   ├── index.js                 # Server entry point
+│   ├── .env.example
 │   └── package.json
 │
-├── client/                # Frontend application
+├── client/                      # Frontend application
 │   ├── src/
-│   │   ├── App.jsx        # Main app component
-│   │   ├── Chat.jsx       # Chat interface
-│   │   ├── RegisterAndLoginForm.jsx
-│   │   ├── UserContext.jsx
-│   │   ├── Avatar.jsx
-│   │   ├── Contact.jsx
-│   │   ├── Menu.jsx
-│   │   ├── Toast.jsx
-│   │   └── Logo.jsx
+│   │   ├── components/          # Reusable components
+│   │   │   ├── Avatar.jsx
+│   │   │   ├── Contact.jsx
+│   │   │   ├── Logo.jsx
+│   │   │   ├── Menu.jsx
+│   │   │   └── Toast.jsx
+│   │   ├── context/
+│   │   │   └── UserContext.jsx
+│   │   ├── pages/
+│   │   │   ├── Chat.jsx
+│   │   │   └── RegisterAndLoginForm.jsx
+│   │   ├── App.jsx
+│   │   ├── Routes.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── public/
 │   ├── index.html
 │   ├── vite.config.js
+│   ├── .env.example
 │   └── package.json
 │
 └── README.md

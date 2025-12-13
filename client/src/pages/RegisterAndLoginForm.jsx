@@ -1,6 +1,6 @@
 import { useState, useContext } from "react"
 import axios from "axios"
-import { UserContext } from "./context/UserContext"
+import { UserContext } from "../context/UserContext"
 import Logo from "../components/Logo"
 import Toast from "../components/Toast"
 

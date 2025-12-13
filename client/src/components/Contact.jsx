@@ -1,4 +1,4 @@
-import Avatar from "./components/Avatar"
+import Avatar from "./Avatar"
 
 function Contact({ id, selected, username, onClick, online }) {
     return (

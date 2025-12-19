@@ -212,7 +212,7 @@ treq/
 
 ## License
 
-This project is open source and available under the [ISC License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Author
 
@@ -224,3 +224,6 @@ Yours truly
 - Tailwind CSS for styling utilities
 - MongoDB for database
 - Vercel and Render for hosting
+---
+
+Made with ❤️
